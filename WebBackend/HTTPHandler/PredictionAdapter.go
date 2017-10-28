@@ -35,7 +35,6 @@ func (adapter *PredictionAdapter) HandleDemandsRequest(w http.ResponseWriter, ho
 	var zoneIDs []int*/
 
 	for _, value := range adapter.Parser.ParsedData {
-		log.Println(value.Hour)
 		if hour == value.Hour {
 			demandResponse.DemandsByZone = append(demandResponse.DemandsByZone, value.Demands)
 			demandResponse.ZoneIDs = append(demandResponse.ZoneIDs, value.ZoneID)
