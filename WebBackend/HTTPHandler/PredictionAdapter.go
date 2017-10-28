@@ -1,4 +1,4 @@
-package main
+package HTTPHandler
 
 import (
 	"math/rand"
