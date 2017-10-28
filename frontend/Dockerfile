@@ -9,4 +9,4 @@ COPY webpack.config.js .
 RUN npm install   
 COPY src ./src  
 EXPOSE 8080  
-CMD [ "npm", "run", "dev"]  
+CMD [ "npm", "run", "cloud"]  
