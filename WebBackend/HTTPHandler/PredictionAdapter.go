@@ -30,9 +30,6 @@ func (adapter *PredictionAdapter) InitParser() {
 func (adapter *PredictionAdapter) HandleDemandsRequest(w http.ResponseWriter, hour int) bool {
 	
 	demandResponse := &DemandResponse{}
-/*	var demandsByZone []int
-	var demandsByRatio []float64
-	var zoneIDs []int*/
 
 	for _, value := range adapter.Parser.ParsedData {
 		if hour == value.Hour {
