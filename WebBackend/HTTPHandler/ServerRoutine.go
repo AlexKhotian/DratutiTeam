@@ -23,5 +23,5 @@ func ServerRoutineFactory() IServerRoutine {
 // RunServer starts a web server
 func (serverImpl *ServerRoutineImpl) RunServer() {
 	http.Handle("/", serverImpl.httpHandlerUtil)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":7777", nil)
 }
