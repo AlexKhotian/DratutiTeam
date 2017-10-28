@@ -28,7 +28,6 @@ def squeeze_time(time):
 
 def squeeze_yearday(time):
     dayofyear = int((date.fromtimestamp(time) - date(2017,10,1)).days)
-    print(dayofyear)
     return dayofyear
 
 def in_zone(lon, lat, zone):
