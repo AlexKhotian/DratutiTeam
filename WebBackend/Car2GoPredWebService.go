@@ -1,6 +1,8 @@
 package main
 
+import "DratutiTeam/WebBackend/HTTPHandler"
+
 func main() {
-	server := ServerRoutineFactory()
+	server := HTTPHandler.ServerRoutineFactory()
 	server.RunServer()
 }
