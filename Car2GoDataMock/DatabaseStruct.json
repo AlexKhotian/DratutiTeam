@@ -10,7 +10,8 @@
     },
     "database_env": {
         "id": "1",
-        "day": "2",
+        "monthday": "22",
+        "weekday": "3",
         "hour": "12",
         "isRush": false,
         "isGoodWeather": true,

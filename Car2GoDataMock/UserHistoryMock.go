@@ -20,11 +20,10 @@ func main() {
 	rand.Seed(time.Now().Unix())
 	dayCounter := 7
 	for j:= 1; j <= 31; j++ {
+		if dayCounter > 7 {
+			dayCounter = 0
+		}
 		for k:= 1; k <= 24; k++ {
-			if dayCounter > 7 {
-				dayCounter = 0
-			}
-			
 			isRush := false
 			isGoodWeather := true
 			isFallout := false
@@ -55,7 +54,8 @@ func main() {
 			}
 
 			envRow := new(EnvData)
-			envRow.Day = j
+			envRow.monthday = j
+			envRow.weekday = dayCounter
 			envRow.Hour = k
 			envRow.IsRush = isRush
 			envRow.IsWeekend = isWeekend
@@ -108,6 +108,7 @@ func main() {
 				dbAccessor.AddRowToHistory(*row)
 			}
 		}
+		dayCounter = dayCounter + 1
 	}
 	dbAccessor.Shutdown()
 }

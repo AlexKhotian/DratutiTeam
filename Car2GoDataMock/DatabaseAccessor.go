@@ -18,7 +18,8 @@ type HistoryDataRow struct {
 }
 
 type EnvData struct {
-	Day int
+    monthday int
+    weekday int
 	Hour int
 	IsRush bool
 	IsGoodWeather bool
@@ -68,7 +69,7 @@ func (accessor *DatabaseAccessor) AddRowToHistory(data HistoryDataRow) bool {
 
 func (accessor *DatabaseAccessor) CreateDatabaseEnv() bool {
     statement, err :=  accessor.databaseHistory.Prepare(`CREATE TABLE IF NOT EXISTS EnvData
-         (id INTEGER PRIMARY KEY, day INTEGER, hour INTEGER, isRush BOOL,
+         (id INTEGER PRIMARY KEY, monthDay INTEGER, weekday INTEGER, hour INTEGER, isRush BOOL,
          isGoodWeather BOOL, isFallout BOOL, isWeekend BOOL, EventID INTEGER)`)
          if err != nil {
             fmt.Println("Error CreateDatabaseEnv pr" + err.Error())
@@ -81,12 +82,12 @@ func (accessor *DatabaseAccessor) CreateDatabaseEnv() bool {
 
 func (accessor *DatabaseAccessor) AddRowToEnv(data EnvData) bool {
     statement, err :=  accessor.databaseHistory.Prepare(`INSERT INTO EnvData 
-        (day, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+        (monthDay, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
     if err != nil {
         fmt.Println("Error AddRowToEnv prep" + err.Error())
         return false
     }
-    _, err = statement.Exec(data.Day, data.Hour, data.IsRush,
+    _, err = statement.Exec(data.monthday, data.weekday, data.Hour, data.IsRush,
         data.IsGoodWeather, data.IsFallout, data.IsWeekend, data.EventID)
     if err != nil {
         fmt.Println("Error AddRowToEnv exec" + err.Error())
