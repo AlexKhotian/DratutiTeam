@@ -6,17 +6,19 @@ import sqlite3
 from datetime import datetime
 import csv
 
+databaspath = '../Car2GoDataMock/historyDatabase'
+
 def get_data():
-    conn = sqlite3.connect('historyDatabase')
+    conn = sqlite3.connect(databaspath)
     c = conn.cursor()
     query = "SELECT time, lonCurrent, latCurrent FROM HistoryData"
     c.execute(query)
     return c
     
 def get_data_env():
-    conn = sqlite3.connect('historyDatabase')
+    conn = sqlite3.connect(databaspath)
     c = conn.cursor()
-    query = "SELECT monthDay, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID FROM EnvData"
+    query = "SELECT monthDay, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID, isPriceHigher, doesPolicyApply FROM EnvData"
     c.execute(query)
     return c
 
@@ -104,15 +106,15 @@ def gen_csv_all(reqdata, envdata):
     with open('all.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row in envdata:
-            monthday, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID = row
-            events = expand_value(EventID, count = 3)
+            monthday, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID, isPriceHigher, doesPolicyApply = row
+            events = expand_value(min(EventID - 1, 0), count = 2)
             for zoneidx in range(8):
                 idx = (monthday, hour, zoneidx)
                 if idx in reqdata:
                     requests = reqdata[idx]
                 else:
                     requests = 0
-                csvwriter.writerow([monthday-1, min(weekday, 6), hour-1, isRush, isGoodWeather, isFallout, isWeekend] + events + [requests, zoneidx])
+                csvwriter.writerow([monthday-1, min(weekday, 6), hour-1, isRush, isGoodWeather, isFallout, isWeekend] + events + [requests, zoneidx, isPriceHigher, doesPolicyApply])
 
 def main():
     req_data = get_data()
