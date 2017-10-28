@@ -1,11 +1,10 @@
 package HTTPHandler
 
 import (
-	"math/rand"
 	"net/http"
 	"encoding/json"
-	"time"
 	"log"
+	"DratutiTeam/WebBackend/Parsing"
 )
 
 type DemandResponse struct {
@@ -15,7 +14,7 @@ type DemandResponse struct {
 }
 
 type PredictionAdapter struct {
-	
+	Parser *Parsing.PredictionParser
 }
 
 type UserDemandData struct {
@@ -23,17 +22,24 @@ type UserDemandData struct {
 	ZoneID int
 }
 
-func (adapter *PredictionAdapter) HandleDemandsRequest(w http.ResponseWriter, day int, hour int) bool {
+func (adapter *PredictionAdapter) InitParser() {
+	adapter.Parser = new(Parsing.PredictionParser)
+	adapter.Parser.ParseInputFile()
+}
+
+func (adapter *PredictionAdapter) HandleDemandsRequest(w http.ResponseWriter, hour int) bool {
 	
 	demandResponse := &DemandResponse{}
 /*	var demandsByZone []int
 	var demandsByRatio []float64
 	var zoneIDs []int*/
-	rand.Seed(time.Now().Unix())
-	for i:=0; i <=7; i++ {
-		randomDemands := rand.Intn(100 - 50) + 50
-		demandResponse.DemandsByZone = append(demandResponse.DemandsByZone, randomDemands)
-		demandResponse.ZoneIDs = append(demandResponse.ZoneIDs, i)
+
+	for _, value := range adapter.Parser.ParsedData {
+		log.Println(value.Hour)
+		if hour == value.Hour {
+			demandResponse.DemandsByZone = append(demandResponse.DemandsByZone, value.Demands)
+			demandResponse.ZoneIDs = append(demandResponse.ZoneIDs, value.ZoneID)
+		}
 	}
 
 	maxValue:=0
