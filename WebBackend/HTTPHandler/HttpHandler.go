@@ -28,11 +28,11 @@ func (handler *HTTPHandlerUtil) ServeHTTP(w http.ResponseWriter, r *http.Request
 		if r.URL.Path == "/Demands" {
 			m, err := url.ParseQuery(r.URL.RawQuery)
 			if err != nil {
-				log.Println("Failed to parse url: ", m["k"][0])
+				log.Println("Failed to parse url: ", m["h"][0])
 				return
 			} else {
-				log.Println("Requested day type: ", m["k"][0])
-				fragment, err := strconv.Atoi(m["k"][0])
+				log.Println("Requested day type: ", m["h"][0])
+				fragment, err := strconv.Atoi(m["h"][0])
 				if err != nil {
 					log.Println("Failed to convert fragment")
 				}
