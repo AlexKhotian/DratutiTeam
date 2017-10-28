@@ -34,9 +34,20 @@
 </template>
 
 <script>
+import _ from 'lodash';
 import L from 'leaflet';
 import Simpleheat from 'simpleheat';
 import LeafletHeat from 'leaflet.heat';
+
+import Search from './Search.vue';
+
+const zonesCenters = [
+  [40.805164, -73.955591], [40.799734, -73.941266],
+  [40.791838, -73.965153], [40.85368, -73.949495],
+  [40.776857, -73.976529], [40.771009, -73.960687],
+  [40.757183, -73.990178], [40.751992, -73.973931]
+];
+
 
 export default {
   data() {
@@ -56,9 +67,14 @@ export default {
   methods: {
     recreateData() {
       this.myData = [];
-      for (let i = -10; i < 10; i++) {
-        for (let j = -10; j < 10; j++) {
-          this.myData.push([48.79208 + i / 1000, 9.23218 + j / 1000, Math.random()]);
+      for (let i = 0; i < 50; i++) {
+        for (let j = 0; j < 50; j++) {
+          let data = _.clone(zonesCenters[0]);
+          data[0] -= 0.05/50 * i;
+          data[1] -= 0.05/50 * j;
+          const zoneId = this.pointToIdZone({lat: data[0], long: data[1]});
+          data[2] = zoneId / 8;
+          this.myData.push(data);
         }
       }
     },
@@ -67,7 +83,16 @@ export default {
         this.map.removeLayer(this.heat);
       }
       this.heat = L.heatLayer(
-        this.myData, { radius: 40 }).addTo(this.map);
+        this.myData, { radius: 40, blur: 50 }).addTo(this.map);
+    },
+    pointToIdZone({lat, long}) {
+      return _.minBy(_.map(zonesCenters, (zone, id) => {
+        // squared distance
+        return {
+          id,
+          distance: Math.pow(zone[0] - lat, 2) + Math.pow(zone[1] - long, 2),
+        };
+      }), 'distance').id;
     },
   },
   mounted() {
@@ -79,7 +104,7 @@ export default {
     );
 
     this.map = new L.Map('map-canvas', {
-      center: new L.LatLng(48.79208, 9.23218),
+      center: new L.LatLng(40.771009, -73.960687),
       zoom: 14,
       layers: [baseLayer],
     });
