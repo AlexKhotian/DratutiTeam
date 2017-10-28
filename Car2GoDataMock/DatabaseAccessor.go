@@ -20,9 +20,11 @@ type HistoryDataRow struct {
 type EnvData struct {
     monthday int
     weekday int
-	Hour int
-	IsRush bool
-	IsGoodWeather bool
+		Hour int
+		IsPriceHigher bool
+		DoesPolicyApply bool
+		IsRush bool
+		IsGoodWeather bool
     IsFallout bool
     IsWeekend bool
     EventID int
@@ -52,7 +54,7 @@ func (accessor *DatabaseAccessor) CreateDatabaseHistory() bool {
 }
 
 func (accessor *DatabaseAccessor) AddRowToHistory(data HistoryDataRow) bool {
-    statement, err := accessor.databaseHistory.Prepare(`INSERT INTO HistoryData 
+    statement, err := accessor.databaseHistory.Prepare(`INSERT INTO HistoryData
         (time, lonCurrent, latCurrent, lonDestination, latDestination, booked) VALUES (?, ?, ?, ?, ?, ?)`)
     if err != nil {
         fmt.Println("Error AddRowToHistory prep" + err.Error())
@@ -70,7 +72,7 @@ func (accessor *DatabaseAccessor) AddRowToHistory(data HistoryDataRow) bool {
 func (accessor *DatabaseAccessor) CreateDatabaseEnv() bool {
     statement, err :=  accessor.databaseHistory.Prepare(`CREATE TABLE IF NOT EXISTS EnvData
          (id INTEGER PRIMARY KEY, monthDay INTEGER, weekday INTEGER, hour INTEGER, isRush BOOL,
-         isGoodWeather BOOL, isFallout BOOL, isWeekend BOOL, EventID INTEGER)`)
+         isGoodWeather BOOL, isFallout BOOL, isWeekend BOOL, IsPriceHigher BOOL, doesPolicyApply BOOL, EventID INTEGER)`)
          if err != nil {
             fmt.Println("Error CreateDatabaseEnv pr" + err.Error())
             return false
@@ -81,14 +83,15 @@ func (accessor *DatabaseAccessor) CreateDatabaseEnv() bool {
 }
 
 func (accessor *DatabaseAccessor) AddRowToEnv(data EnvData) bool {
-    statement, err :=  accessor.databaseHistory.Prepare(`INSERT INTO EnvData 
-        (monthDay, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+    statement, err :=  accessor.databaseHistory.Prepare(`INSERT INTO EnvData
+        (monthDay, weekday, hour, isRush, isGoodWeather,
+					isFallout, isWeekend, IsPriceHigher, doesPolicyApply, EventID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     if err != nil {
         fmt.Println("Error AddRowToEnv prep" + err.Error())
         return false
     }
     _, err = statement.Exec(data.monthday, data.weekday, data.Hour, data.IsRush,
-        data.IsGoodWeather, data.IsFallout, data.IsWeekend, data.EventID)
+        data.IsGoodWeather, data.IsFallout, data.IsWeekend, data.IsPriceHigher, data.DoesPolicyApply, data.EventID)
     if err != nil {
         fmt.Println("Error AddRowToEnv exec" + err.Error())
         return false
@@ -97,6 +100,6 @@ func (accessor *DatabaseAccessor) AddRowToEnv(data EnvData) bool {
 }
 
 func (accessor *DatabaseAccessor) Shutdown() bool {
-    accessor.databaseHistory.Close() 
+    accessor.databaseHistory.Close()
     return true
 }
