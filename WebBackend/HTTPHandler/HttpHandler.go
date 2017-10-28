@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"strconv"
+	"net/url"
 )
 
 // HTTPHandlerUtil implement interface
@@ -16,6 +18,7 @@ type HTTPHandlerUtil struct {
 func HTTPHandlerFactory() *HTTPHandlerUtil {
 	thisHandler := new(HTTPHandlerUtil)
 	thisHandler.adapter = new(PredictionAdapter)
+	thisHandler.adapter.InitParser()
 	return thisHandler
 }
 
@@ -23,7 +26,12 @@ func (handler *HTTPHandlerUtil) ServeHTTP(w http.ResponseWriter, r *http.Request
 	log.Println(r.URL.Path)
 	if r.Method == "GET" {
 		if r.URL.Path == "/Demands" {
-			handler.adapter.HandleDemandsRequest(w, 0, 0)
+			m, _ := url.ParseQuery(r.URL.RawQuery)
+			log.Println(m)
+			log.Println(m["k"][0])
+			fragment, _ := strconv.Atoi(m["k"][0])
+		//	log.Println("Fragment: ", fragment)
+			handler.adapter.HandleDemandsRequest(w, fragment)
 			return
 		}
 	}
