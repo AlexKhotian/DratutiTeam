@@ -3,26 +3,24 @@
     <nav class="light-blue lighten-1" role="navigation">
       <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
         <ul class="right hide-on-med-and-down">
-          <li><a href="#">Navbar Link</a></li>
+          <li><a href="#" v-on:click="goToStuttgart">Ab ins Ländle</a></li>
         </ul>
         <ul id="nav-mobile" class="side-nav">
-          <li><a href="#">Navbar Link</a></li>
+          <li><a href="#" v-on:click="goToStuttgart">Go to Stuttgart</a></li>
         </ul>
         <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
       </div>
     </nav>
-    <div class="container">
-      <div class="row">
-        <div class="col s9">
-          <div class="heatmap" id="map-canvas" style="height: 80vh; width: 100%">
-          </div>
+    <div class="row">
+      <div class="col s10">
+        <div class="heatmap" id="map-canvas" style="height: 85vh; width: 100%">
         </div>
-        <div class="col s3">
-          <h3>Searching</h3>
+      </div>
+      <div class="col s2">
+        <h3>Searching</h3>
 
-        </div>
-      </diV>
-    </div>
+      </div>
+    </diV>
     <footer class="align-center">
       <form action="#">
         <p class="range-field">
@@ -39,6 +37,8 @@ import L from 'leaflet';
 import math from 'mathjs';
 import Simpleheat from 'simpleheat';
 import LeafletHeat from 'leaflet.heat';
+
+import stuttgart from './stuttgart';
 
 import Search from './Search.vue';
 
@@ -58,8 +58,9 @@ const mostOutsidePoints = [
   [40.751822,-74.006140],	[40.741549,-73.975585],
 ]
 
-const SAMPLING_COLUMNS = 30;
-const SAMPLING_ROWS= 50;
+const SAMPLING_COLUMNS = 100;
+const SAMPLING_ROWS= 100;
+const API_URL = "https://webbackend-webbackend.training.altemista.cloud";
 
 export default {
   data() {
@@ -68,23 +69,33 @@ export default {
       myData: [],
       heat: null,
       map: null,
-      demandForZones: [0, 0.1, 0.4, 0.2, 0.8, 0.1, 1, 0],
+      demandForZones: [],
       samplingPoints: [],
     };
   },
   watch: {
     myTime() {
-      window.fetch('http://localhost:7777/Demands?h=' + this.myTime, { mode: 'no-cors' })
-        .then((response, reject) => {
-          return response.body;
-      }).then((json) => {
-        console.log(json);
-        this.recreateData();
-        this.resetLayer();
-      });
+      this.getDemand();
+      stuttgart.addToMap(this.map, this.myTime);
     }
   },
   methods: {
+    goToStuttgart() {
+      this.map.panTo(new L.LatLng(48.79208, 9.23218));
+    },
+    getDemand() {
+      window.fetch(API_URL + '/Demands?h=' + this.myTime, {  })
+        .then((response, reject) => {
+          return response.json();
+      }).then((json) => {
+        this.demandForZones = json._demandsByZone;
+        this.demandForZones = this.demandForZones.map((demand) => {
+          return demand / 100;
+        })
+        this.recreateData();
+        this.resetLayer();
+      });
+    },
     createMeasurementPoints() {
       this.samplingPoints = [];
       let dataRow = [mostOutsidePoints[0]];
@@ -125,16 +136,17 @@ export default {
         this.map.removeLayer(this.heat);
       }
       this.heat = L.heatLayer(
-        this.myData, { radius: 40, blur: 50 }).addTo(this.map);
+        this.myData, { radius: 20 * 10000 / SAMPLING_ROWS / SAMPLING_COLUMNS, blur: 40 }).addTo(this.map);
     },
     pointToIdZone({lat, long}) {
-      return _.minBy(_.map(zonesCenters, (zone, id) => {
+      let zone = _.minBy(_.map(zonesCenters, (zone, id) => {
         // squared distance
         return {
           id,
           distance: Math.pow(zone[0] - lat, 2) + Math.pow(zone[1] - long, 2),
         };
       }), 'distance').id;
+      return zone;
     },
   },
   mounted() {
@@ -151,8 +163,9 @@ export default {
       layers: [baseLayer],
     });
     this.createMeasurementPoints();
-    this.recreateData();
-    this.resetLayer();
+    this.getDemand();
+
+    stuttgart.addToMap(this.map, this.myTime);
   }
 }
 </script>

@@ -37,6 +37,8 @@ func (handler *HTTPHandlerUtil) ServeHTTP(w http.ResponseWriter, r *http.Request
 					log.Println("Failed to convert fragment")
 				}
 				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
 				handler.adapter.HandleDemandsRequest(w, fragment)
 			}
 			return
