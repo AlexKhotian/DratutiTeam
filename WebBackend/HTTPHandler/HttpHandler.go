@@ -36,6 +36,7 @@ func (handler *HTTPHandlerUtil) ServeHTTP(w http.ResponseWriter, r *http.Request
 				if err != nil {
 					log.Println("Failed to convert fragment")
 				}
+				w.Header().Set("Content-Type", "application/json")
 				handler.adapter.HandleDemandsRequest(w, fragment)
 			}
 			return
