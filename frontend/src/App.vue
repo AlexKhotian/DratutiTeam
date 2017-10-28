@@ -74,12 +74,13 @@ export default {
   },
   watch: {
     myTime() {
-      const fetch = () => window.fetch('/Demands?h=' + this.myTime, fetchDefaults())
-        .then((response) => {
-          response.json();
-          console.log(response.json());
-          this.recreateData();
-          this.resetLayer();
+      window.fetch('http://localhost:7777/Demands?h=' + this.myTime, { mode: 'no-cors' })
+        .then((response, reject) => {
+          return response.body;
+      }).then((json) => {
+        console.log(json);
+        this.recreateData();
+        this.resetLayer();
       });
     }
   },
