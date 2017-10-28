@@ -1,0 +1,21 @@
+{
+    "database_history": {
+        "id": "1",
+        "time": "1506821570",
+        "lonCurrent": "40.744416",
+        "latCurrent": "-74.005068",
+        "lonDestination": "40.744416",
+        "latDestination": "-74.005068",
+        "booked": true
+    },
+    "database_env": {
+        "id": "1",
+        "day": "2",
+        "hour": "12",
+        "isRush": false,
+        "isGoodWeather": true,
+        "isFallout": false,
+        "isWeekend": true,
+        "EventID": 2
+    }
+}
