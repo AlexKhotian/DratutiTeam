@@ -19,7 +19,7 @@ func main() {
 	dbAccessor.CreateDatabaseEnv()
 	rand.Seed(time.Now().Unix())
 	dayCounter := 7
-	for j:= 1; j <= 8; j++ {
+	for j:= 1; j <= 31; j++ {
 		for k:= 1; k <= 24; k++ {
 			if dayCounter > 7 {
 				dayCounter = 0
