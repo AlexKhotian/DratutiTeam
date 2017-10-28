@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --hot",
-    "cloud": "cross-env NODE_ENV=development webpack-dev-server --host 0.0.0.0 --hot",
+    "cloud": "cross-env NODE_ENV=development webpack-dev-server --host 0.0.0.0 --public frontend-webbackend.training.altemista.cloud --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
