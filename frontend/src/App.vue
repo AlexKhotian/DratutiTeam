@@ -56,6 +56,7 @@ export default {
       myData: [],
       heat: null,
       map: null,
+      demandForZones: [0, 0.1, 0.4, 0.2, 0.8, 0.1, 1,0],
     };
   },
   watch: {
@@ -73,7 +74,7 @@ export default {
           data[0] -= 0.05/50 * i;
           data[1] -= 0.05/50 * j;
           const zoneId = this.pointToIdZone({lat: data[0], long: data[1]});
-          data[2] = zoneId / 8;
+          data[2] = this.demandForZones[zoneId];
           this.myData.push(data);
         }
       }
