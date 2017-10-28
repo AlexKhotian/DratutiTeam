@@ -19,7 +19,7 @@ func main() {
 	dbAccessor.CreateDatabaseEnv()
 	rand.Seed(time.Now().Unix())
 	dayCounter := 7
-	for j:= 1; j <= 31; j++ {
+	for j:= 1; j <= 365; j++ {
 		if dayCounter > 7 {
 			dayCounter = 0
 		}
@@ -40,16 +40,26 @@ func main() {
 			}
 			eventType := 0
 			if dayCounter > 5 {
-				if k == 8 || k == 13 || k == 18 {
-					isRush = true
-					bottomLoadBound = 50
-					topLoadBound = 60
+				if k < 5 || k > 22 {
+					bottomLoadBound = 5
+					topLoadBound = 10
+				} else {
+					if k == 8 || k == 13 || k == 18 {
+						isRush = true
+						bottomLoadBound = 50
+						topLoadBound = 60
+					}
 				}
 			} else {
 				isWeekend = true
-				if k == 10 || k == 21 {
-					bottomLoadBound = 50
-					topLoadBound = 60
+				if k < 5 || k > 22 {
+					bottomLoadBound = 3
+					topLoadBound = 5
+				} else {
+					if k == 10 || k == 21 {
+						bottomLoadBound = 35
+						topLoadBound = 45
+					}
 				}
 			}
 
@@ -90,6 +100,19 @@ func main() {
 				bottomLoadBound = bottomLoadBound + 25
 				topLoadBound = topLoadBound + 25
 			}
+
+			if rand.Intn(10) == 1 {
+				envRow.DoesPolicyApply = true
+				bottomLoadBound = bottomLoadBound * 2
+				topLoadBound = topLoadBound * 2
+			}
+
+			if rand.Intn(7) == 1 {
+				envRow.IsPriceHigher = true
+				bottomLoadBound = bottomLoadBound * 2
+				topLoadBound = topLoadBound * 2
+			}
+
 			dbAccessor.AddRowToEnv(*envRow)
 			randomHistorySize := rand.Intn(topLoadBound - bottomLoadBound) + bottomLoadBound
 
