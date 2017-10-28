@@ -3,7 +3,7 @@
 #
 
 import sqlite3
-from datetime import datetime
+from datetime import datetime, date
 import csv
 
 databaspath = '../Car2GoDataMock/historyDatabase'
@@ -26,9 +26,10 @@ def squeeze_time(time):
     dt = datetime.fromtimestamp(time)
     return dt.hour
 
-def squeeze_monthday(time):
-    dt = datetime.fromtimestamp(time)
-    return dt.day
+def squeeze_yearday(time):
+    dayofyear = int((date.fromtimestamp(time) - date(2017,10,1)).days)
+    print(dayofyear)
+    return dayofyear
 
 def in_zone(lon, lat, zone):
     x1,y1,x2,y2 = zone
@@ -75,9 +76,9 @@ def sum_data(rows):
     for row in rows:
         time, lat, lon = row
         hour = squeeze_time(time)
-        monthday = squeeze_monthday(time)
+        yearday = squeeze_yearday(time)
         zone = squeeze_zone(lon, lat)
-        idx = (monthday, hour, zone)
+        idx = (yearday, hour, zone)
         summed_data[idx] = summed_data.get(idx, 0) + 1
     return summed_data
 
@@ -106,15 +107,15 @@ def gen_csv_all(reqdata, envdata):
     with open('all.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row in envdata:
-            monthday, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID, isPriceHigher, doesPolicyApply = row
+            yearday, weekday, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID, isPriceHigher, doesPolicyApply = row
             events = expand_value(min(EventID - 1, 0), count = 2)
             for zoneidx in range(8):
-                idx = (monthday, hour, zoneidx)
+                idx = (yearday, hour, zoneidx)
                 if idx in reqdata:
                     requests = reqdata[idx]
                 else:
                     requests = 0
-                csvwriter.writerow([monthday-1, min(weekday, 6), hour-1, isRush, isGoodWeather, isFallout, isWeekend] + events + [requests, zoneidx, isPriceHigher, doesPolicyApply])
+                csvwriter.writerow([yearday-1, min(weekday, 6), hour-1, isRush, isGoodWeather, isFallout, isWeekend] + events + [requests, zoneidx, isPriceHigher, doesPolicyApply])
 
 def main():
     req_data = get_data()
