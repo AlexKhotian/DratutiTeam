@@ -36,6 +36,5 @@ func (parser *PredictionParser) ParseInputFile() {
 		demands, _ := strconv.Atoi(record[2])
 		tmp := ZoneDemand{hour, zoneID, demands}
 		parser.ParsedData = append(parser.ParsedData, tmp)
-		log.Println(tmp.Hour,tmp.ZoneID,tmp.Demands)
 	}
 }
