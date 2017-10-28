@@ -17,18 +17,32 @@ type HistoryDataRow struct {
     Booked bool
 }
 
-type DatabaseAccessor struct {
-	database *sql.DB
+type EnvData struct {
+	Day int
+	Hour int
+	IsRush bool
+	IsGoodWeather bool
+    IsFallout bool
+    IsWeekend bool
+    EventID int
 }
 
-func (accessor *DatabaseAccessor) CreateDatabase(databasePath string) bool {
+type DatabaseAccessor struct {
+    databaseHistory *sql.DB
+    //databaseEnv *sql.DB
+}
+
+func (accessor *DatabaseAccessor) OpenDB(databasePath string) {
     database, err := sql.Open("sqlite3", databasePath)
     if err != nil {
         fmt.Println("Error occured while creating database")
-        return false
+        return
     }
-    accessor.database = database
-    statement, _ := database.Prepare(`CREATE TABLE IF NOT EXISTS HistoryData
+    accessor.databaseHistory = database
+}
+
+func (accessor *DatabaseAccessor) CreateDatabaseHistory() bool {
+    statement, _ :=  accessor.databaseHistory.Prepare(`CREATE TABLE IF NOT EXISTS HistoryData
          (id INTEGER PRIMARY KEY, time INTEGER, lonCurrent REAL,
          latCurrent REAL, lonDestination REAL , latDestination REAL, booked BOOL)`)
     statement.Exec()
@@ -36,23 +50,52 @@ func (accessor *DatabaseAccessor) CreateDatabase(databasePath string) bool {
     return true
 }
 
-func (accessor *DatabaseAccessor) AddRow(data HistoryDataRow) bool {
-    statement, err := accessor.database.Prepare(`INSERT INTO HistoryData 
+func (accessor *DatabaseAccessor) AddRowToHistory(data HistoryDataRow) bool {
+    statement, err := accessor.databaseHistory.Prepare(`INSERT INTO HistoryData 
         (time, lonCurrent, latCurrent, lonDestination, latDestination, booked) VALUES (?, ?, ?, ?, ?, ?)`)
     if err != nil {
-        fmt.Println("Error AddRow prep" + err.Error())
+        fmt.Println("Error AddRowToHistory prep" + err.Error())
         return false
     }
     _, err = statement.Exec(int(data.Time.Unix()), data.LonCurrent, data.LatCurrent,
         data.LonDestination, data.LatDestination, data.Booked)
     if err != nil {
-        fmt.Println("Error AddRow exec" + err.Error())
+        fmt.Println("Error AddRowToHistory exec" + err.Error())
+        return false
+    }
+    return true
+}
+
+func (accessor *DatabaseAccessor) CreateDatabaseEnv() bool {
+    statement, err :=  accessor.databaseHistory.Prepare(`CREATE TABLE IF NOT EXISTS EnvData
+         (id INTEGER PRIMARY KEY, day INTEGER, hour INTEGER, isRush BOOL,
+         isGoodWeather BOOL, isFallout BOOL, isWeekend BOOL, EventID INTEGER)`)
+         if err != nil {
+            fmt.Println("Error CreateDatabaseEnv pr" + err.Error())
+            return false
+        }
+    statement.Exec()
+
+    return true
+}
+
+func (accessor *DatabaseAccessor) AddRowToEnv(data EnvData) bool {
+    statement, err :=  accessor.databaseHistory.Prepare(`INSERT INTO EnvData 
+        (day, hour, isRush, isGoodWeather, isFallout, isWeekend, EventID) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+    if err != nil {
+        fmt.Println("Error AddRowToEnv prep" + err.Error())
+        return false
+    }
+    _, err = statement.Exec(data.Day, data.Hour, data.IsRush,
+        data.IsGoodWeather, data.IsFallout, data.IsWeekend, data.EventID)
+    if err != nil {
+        fmt.Println("Error AddRowToEnv exec" + err.Error())
         return false
     }
     return true
 }
 
 func (accessor *DatabaseAccessor) Shutdown() bool {
-    accessor.database.Close() 
+    accessor.databaseHistory.Close() 
     return true
 }

@@ -5,39 +5,118 @@ import (
 	"fmt"
 	"math/rand"
 )
+// predefine rush hour
+// 8 / 13 / 6
+// 10 / 21
 
 func main() {
 	// create database file
 	fmt.Println("Start to create")
 
 	dbAccessor := new(DatabaseAccessor)
-	dbAccessor.CreateDatabase("historyDatabase")
+	dbAccessor.OpenDB("historyDatabase")
+	dbAccessor.CreateDatabaseHistory()
+	dbAccessor.CreateDatabaseEnv()
 	rand.Seed(time.Now().Unix())
-
-	for i := 0; i < 1000000; i++ {
-		row := new(HistoryDataRow)
-		row.Time = GenerateRandomTime()
-		row.LonCurrent, row.LatCurrent = GenerateRandomCoord()
-		if rand.Intn(2) == 1 {
-			row.Booked = true
-			if rand.Intn(2) == 1 {
-				row.LonDestination, row.LatDestination = GenerateRandomCoord()
+	dayCounter := 7
+	for j:= 1; j <= 8; j++ {
+		for k:= 1; k <= 24; k++ {
+			if dayCounter > 7 {
+				dayCounter = 0
 			}
-		} else {
-			row.Booked = false
+			
+			isRush := false
+			isGoodWeather := true
+			isFallout := false
+			isWeekend := false
+
+			bottomLoadBound := 20
+			topLoadBound := 30
+
+			if rand.Intn(10) == 1 {
+				isFallout = true
+			}
+			if rand.Intn(3) == 1 {
+				isGoodWeather = false
+			}
+			eventType := 0
+			if dayCounter > 5 {
+				if k == 8 || k == 13 || k == 18 {
+					isRush = true
+					bottomLoadBound = 50
+					topLoadBound = 60
+				}
+			} else {
+				isWeekend = true
+				if k == 10 || k == 21 {
+					bottomLoadBound = 50
+					topLoadBound = 60
+				}
+			}
+
+			envRow := new(EnvData)
+			envRow.Day = j
+			envRow.Hour = k
+			envRow.IsRush = isRush
+			envRow.IsWeekend = isWeekend
+			envRow.IsGoodWeather = isGoodWeather
+			envRow.IsFallout = isFallout
+
+			if rand.Intn(5) == 1 {
+				eventType = rand.Intn(3)
+				rise := 0
+				switch eventType {
+				case 1:
+					rise = 10
+					break
+				case 2:
+					rise = 20
+					break
+				case 3:
+					rise = 30
+					break
+				}
+				envRow.EventID = eventType
+				bottomLoadBound = bottomLoadBound + rise
+				topLoadBound = topLoadBound + rise
+			}
+
+			if !isGoodWeather {
+				bottomLoadBound = bottomLoadBound + 25
+				topLoadBound = topLoadBound + 25
+			}
+
+			if isFallout {
+				bottomLoadBound = bottomLoadBound + 25
+				topLoadBound = topLoadBound + 25
+			}
+			dbAccessor.AddRowToEnv(*envRow)
+			randomHistorySize := rand.Intn(topLoadBound - bottomLoadBound) + bottomLoadBound
+
+			for demand := 0; demand <= randomHistorySize; demand++ {
+				row := new(HistoryDataRow)
+				row.Time = GenerateRandomTime(j, k)
+				row.LonCurrent, row.LatCurrent = GenerateRandomCoord()
+				if rand.Intn(2) == 1 {
+					row.Booked = true
+					if rand.Intn(2) == 1 {
+						row.LonDestination, row.LatDestination = GenerateRandomCoord()
+					}
+				} else {
+					row.Booked = false
+				}
+				dbAccessor.AddRowToHistory(*row)
+			}
 		}
-		dbAccessor.AddRow(*row)
 	}
 	dbAccessor.Shutdown()
 }
 
-func GenerateRandomTime() time.Time {
-	randomDay := rand.Intn(31 - 1) + 1
-	randomHour := rand.Intn(24 - 1) + 1
+func GenerateRandomTime(day int, hour int) time.Time {
 	randomMin := rand.Intn(60 - 1) + 1
 	randomSec := rand.Intn(60 - 1) + 1
 	genTime := time.Date(2017, time.October,
-		randomDay, randomHour,
+		day, hour,
 		randomMin, randomSec,
 		0, time.UTC)
 	return genTime
