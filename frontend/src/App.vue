@@ -26,7 +26,7 @@
     <footer class="align-center">
       <form action="#">
         <p class="range-field">
-          <input type="range" id="test5" min="-100" max="100" v-model="myTime" />
+          <input type="range" id="test5" min="0" max="23" v-model="myTime" />
         </p>
       </form>
     </footer>
@@ -36,18 +36,30 @@
 <script>
 import _ from 'lodash';
 import L from 'leaflet';
+import math from 'mathjs';
 import Simpleheat from 'simpleheat';
 import LeafletHeat from 'leaflet.heat';
 
 import Search from './Search.vue';
 
-const zonesCenters = [
-  [40.805164, -73.955591], [40.799734, -73.941266],
-  [40.791838, -73.965153], [40.85368, -73.949495],
-  [40.776857, -73.976529], [40.771009, -73.960687],
-  [40.757183, -73.990178], [40.751992, -73.973931]
-];
+const zonesCenters = {
+  0: [40.805164, -73.955591],
+  1: [40.799734, -73.941266],
+  2: [40.791838, -73.965153],
+  3: [40.85368, -73.949495],
+  4: [40.776857, -73.976529],
+  5: [40.771009, -73.960687],
+  6: [40.757183, -73.990178],
+  7: [40.751992, -73.973931]
+};
 
+const mostOutsidePoints = [
+  [40.816033,-73.962023], [40.804079,-73.932326],
+  [40.751822,-74.006140],	[40.741549,-73.975585],
+]
+
+const SAMPLING_COLUMNS = 30;
+const SAMPLING_ROWS= 50;
 
 export default {
   data() {
@@ -56,28 +68,56 @@ export default {
       myData: [],
       heat: null,
       map: null,
-      demandForZones: [0, 0.1, 0.4, 0.2, 0.8, 0.1, 1,0],
+      demandForZones: [0, 0.1, 0.4, 0.2, 0.8, 0.1, 1, 0],
+      samplingPoints: [],
     };
   },
   watch: {
     myTime() {
-      this.recreateData();
-      this.resetLayer();
+      const fetch = () => window.fetch('/Demands?h=' + this.myTime, fetchDefaults())
+        .then((response) => {
+          response.json();
+          console.log(response.json());
+          this.recreateData();
+          this.resetLayer();
+      });
     }
   },
   methods: {
+    createMeasurementPoints() {
+      this.samplingPoints = [];
+      let dataRow = [mostOutsidePoints[0]];
+      let deltaWithinRow = _.zipWith(mostOutsidePoints[0], mostOutsidePoints[1], (a, b) => {
+        return (a - b) / SAMPLING_COLUMNS;
+      });
+      let deltaWithinColumn = _.zipWith(mostOutsidePoints[0], mostOutsidePoints[2], (a, b) => {
+        return (a - b) / SAMPLING_ROWS;
+      });
+
+      let subtract = (a, b) => {return a - b};
+
+      for (let i = 1; i < SAMPLING_COLUMNS; i++) {
+        dataRow[i] = _.zipWith(dataRow[i - 1], deltaWithinRow, subtract);
+      }
+
+      for (let i = 1; i < SAMPLING_ROWS; i++) {
+        this.samplingPoints = _.concat(this.samplingPoints, dataRow);
+        dataRow = dataRow.map((point) => {
+          return  _.zipWith(point, deltaWithinColumn, subtract);
+        });
+      }
+
+      // store the zone as third information
+      this.samplingPoints.map((point) => {
+        return point.push(this.pointToIdZone({lat: point[0], long: point[1]}));
+      });
+
+    },
     recreateData() {
       this.myData = [];
-      for (let i = 0; i < 50; i++) {
-        for (let j = 0; j < 50; j++) {
-          let data = _.clone(zonesCenters[0]);
-          data[0] -= 0.05/50 * i;
-          data[1] -= 0.05/50 * j;
-          const zoneId = this.pointToIdZone({lat: data[0], long: data[1]});
-          data[2] = this.demandForZones[zoneId];
-          this.myData.push(data);
-        }
-      }
+      this.samplingPoints.forEach((point) => {
+        this.myData.push([point[0], point[1], this.demandForZones[point[2]]]);
+      });
     },
     resetLayer() {
       if(this.heat) {
@@ -109,7 +149,7 @@ export default {
       zoom: 14,
       layers: [baseLayer],
     });
-
+    this.createMeasurementPoints();
     this.recreateData();
     this.resetLayer();
   }
