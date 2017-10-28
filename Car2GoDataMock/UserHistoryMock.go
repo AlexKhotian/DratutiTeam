@@ -116,10 +116,16 @@ func main() {
 			dbAccessor.AddRowToEnv(*envRow)
 			randomHistorySize := rand.Intn(topLoadBound - bottomLoadBound) + bottomLoadBound
 
+			hasPeakAtCenter := (rand.Intn(5) == 1)
+
 			for demand := 0; demand <= randomHistorySize; demand++ {
 				row := new(HistoryDataRow)
 				row.Time = GenerateRandomTime(j, k)
-				row.LonCurrent, row.LatCurrent = GenerateRandomCoord()
+				if hasPeakAtCenter && demand < int(0.6*float64(randomHistorySize)){
+					row.LonCurrent, row.LatCurrent = GeneratePeekInCenter()
+				} else {
+					row.LonCurrent, row.LatCurrent = GenerateRandomCoord()
+				}
 				if rand.Intn(2) == 1 {
 					row.Booked = true
 					if rand.Intn(2) == 1 {
@@ -145,6 +151,13 @@ func GenerateRandomTime(day int, hour int) time.Time {
 		0, time.UTC)
 	return genTime
 }
+
+func GeneratePeekInCenter() (float64, float64) {
+	randomLon := rand.Intn(40758597 - 40750470) + 40750470
+	randomLat := rand.Intn((-73981494) - (-73987245)) + (-73987245)
+	return float64(randomLon)/1000000, float64(randomLat)/1000000
+}
+
 
 func GenerateRandomCoord() (float64, float64) {
 	randomLon := rand.Intn(40810000 - 40741549) + 40741549
