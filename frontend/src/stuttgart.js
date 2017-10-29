@@ -22,13 +22,13 @@ const TRAINS = [
   train9,
 ];
 
-const COLORS =  [
+const COLORS =  _.reverse([
 '#F1433F',
 '#F7E967',
 '#A9CF54',
 '#70B7BA',
 '#3D4C53',
-];
+]);
 
 
 let layer = null;
@@ -76,7 +76,9 @@ function addToMap(map, id, remove = true) {
 
   layer = L.geoJSON(TRAINS[id], {
     pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, geojsonMarkerOptions);
+      const marker = L.circleMarker(latlng, geojsonMarkerOptions);
+      marker.bindTooltip("" + feature.properties.delay, {permanent: true, className: "my-label", offset: [0, 0] });
+      return marker;
     },
     style: function(feature) {
       const colorString = toMyColorSchema(feature.properties.delay);
