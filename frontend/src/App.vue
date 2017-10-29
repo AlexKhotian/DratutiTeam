@@ -1,9 +1,10 @@
 <template>
   <div id="app">
     <nav class="light-blue lighten-1" role="navigation">
-      <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
+      <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Team 07</a>
         <ul class="right hide-on-med-and-down">
           <li><a href="#" v-on:click="goToStuttgart">Ab ins Ländle</a></li>
+          <li><a href="#" v-on:click="goToNewYork">New York, New York!</a></li>
         </ul>
         <ul id="nav-mobile" class="side-nav">
           <li><a href="#" v-on:click="goToStuttgart">Go to Stuttgart</a></li>
@@ -17,8 +18,7 @@
         </div>
       </div>
       <div class="col s2">
-        <h3>Searching</h3>
-
+        <search></search>
       </div>
     </diV>
     <footer class="align-center">
@@ -63,6 +63,9 @@ const SAMPLING_ROWS= 100;
 const API_URL = "https://webbackend-webbackend.training.altemista.cloud";
 
 export default {
+  components: {
+    Search,
+  },
   data() {
     return {
       myTime: 0,
@@ -82,6 +85,9 @@ export default {
   methods: {
     goToStuttgart() {
       this.map.panTo(new L.LatLng(48.79208, 9.23218));
+    },
+    goToNewYork() {
+      this.map.panTo(new L.LatLng(40.771009, -73.960687));
     },
     getDemand() {
       window.fetch(API_URL + '/Demands?h=' + this.myTime, {  })
@@ -171,5 +177,7 @@ export default {
 </script>
 
 <style lang="scss">
-
+.leaflet-heatmap-layer {
+opacity: .6;
+}
 </style>
