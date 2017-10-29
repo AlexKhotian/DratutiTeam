@@ -22,22 +22,44 @@ const TRAINS = [
   train9,
 ];
 
+const COLORS =  [
+'#F1433F',
+'#F7E967',
+'#A9CF54',
+'#70B7BA',
+'#3D4C53',
+];
+
 
 let layer = null;
 let heatLayer = null;
 
 function fakeHeat(map) {
     const myData = [];
-    for (let i = -20; i < 20; i++) {
-      for (let j = -30; j < 30; j++) {
-        myData.push([48.79208 + i / 400, 9.23218 + j / 400, Math.random() * 4]);
+    for (let i = -10; i < 10; i++) {
+      for (let j = -25; j < 25; j++) {
+        myData.push([48.79208 + i / 200, 9.23218 + j / 200, Math.random() * 8]);
       }
     }
     if(heatLayer) {
       map.removeLayer(heatLayer);
     }
     heatLayer = L.heatLayer(
-      myData, { radius: 50, blur: 60, opacity: 0.2 }).addTo(map);
+      myData, { radius: 60, blur: 100 }).addTo(map);
+}
+
+function toMyWeightedHex(number) {
+  const color = number/60 * 255 * 255 * 255;
+  const colorString = color.toString(16);
+
+  return '#' + colorString;
+}
+
+function toMyColorSchema(number) {
+  const myMin = 30;
+  const myMax = 50;
+  const colorId = Math.floor(Math.abs(number - myMin) / (myMax - myMin) * (COLORS.length - 1));
+  return COLORS[colorId];
 }
 
 function addToMap(map, id, remove = true) {
@@ -46,9 +68,9 @@ function addToMap(map, id, remove = true) {
     map.removeLayer(layer);
   }
   var geojsonMarkerOptions = {
-    radius: 8,
+    radius: 45,
     weight: 1,
-    opacity: 1,
+    opacity: 0.6,
     fillOpacity: 0.8
   };
 
@@ -57,10 +79,8 @@ function addToMap(map, id, remove = true) {
         return L.circleMarker(latlng, geojsonMarkerOptions);
     },
     style: function(feature) {
-      const color = feature.properties.delay/60 * 255 * 255 * 255;
-      const colorString = color.toString(16);
-
-      return {fillColor: "#" + colorString};
+      const colorString = toMyColorSchema(feature.properties.delay);
+      return {fillColor: colorString};
     }
   });
   layer.addTo(map);
